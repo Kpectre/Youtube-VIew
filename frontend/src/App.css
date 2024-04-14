@@ -1,0 +1,10 @@
+body,
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#box:last-child {
+  border-bottom: 2px black solid;
+}
