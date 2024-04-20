@@ -5,7 +5,7 @@ import requests
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 CORS(app)
-app.json.ensure_ascii = False
+app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 
 
 def process_request(id):
