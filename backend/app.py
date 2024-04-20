@@ -1,8 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 import requests
-import pandas as pd
-import pprint
+
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 CORS(app)
