@@ -9,8 +9,7 @@ CORS(app)
 app.json.ensure_ascii = False
 
 
-@app.route("/<id>")
-def index(id):
+def process_request(id):
     # 検索したいチャンネルのchannelId
     channelId = id
     key = "AIzaSyDzqOJPnXNXHYxsT_rBCvwJZbi4jVUxHcs"
@@ -83,7 +82,9 @@ def index(id):
     return data
 
 
-# //
+@app.route("/<id>")
+def index(id):
+    return process_request(id)
 
 
 app.run(port=8000, debug=True)
