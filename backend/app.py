@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 import requests
+from concurrent.futures import ThreadPoolExecutor
 
 
 app = Flask(__name__, static_folder=".", static_url_path="")
@@ -8,7 +9,8 @@ CORS(app)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 
 
-def process_request(id):
+@app.route("/<id>")
+def index(id):
     # 検索したいチャンネルのchannelId
     channelId = id
     key = "AIzaSyDzqOJPnXNXHYxsT_rBCvwJZbi4jVUxHcs"
@@ -65,25 +67,28 @@ def process_request(id):
     for i in range(0, len(videoIdList), 50):
         videoIdList_splitted.append(videoIdList[i : i + 50])
 
-    for videoId_grp in videoIdList_splitted:
-        params = {"key": key, "part": "snippet,statistics", "id": ",".join(videoId_grp)}
+    results = []
 
-        videos_result = requests.get(request_url, params=params)
-        videos_result_json = videos_result.json()
+    with ThreadPoolExecutor() as executor:
+        for videoId_grp in videoIdList_splitted:
+            params = {
+                "key": key,
+                "part": "snippet,statistics",
+                "id": ",".join(videoId_grp),
+            }
+            videos_result = executor.submit(requests.get, request_url, params=params)
+            results.append(videos_result)
 
-    for item in videos_result_json["items"]:
-        title = item["snippet"]["title"]
-        viewCount = item["statistics"]["viewCount"]
-        id = item["id"]
+    for result in results:
+        response = result.result()
+        videos_result_json = response.json()
+        for item in videos_result_json["items"]:
+            title = item["snippet"]["title"]
+            viewCount = item["statistics"]["viewCount"]
+            id = item["id"]
+            data.append([title, viewCount, id])
 
-        data.append([title, viewCount, id])
-
-    return data
-
-
-@app.route("/<id>")
-def index(id):
-    return process_request(id)
+    return jsonify(data)
 
 
 app.run(port=8000, debug=True)
